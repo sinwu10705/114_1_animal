@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>動物大解密：自然偵探社</title>
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            background-color: #f0f8ff;
+            margin: 0; padding: 0;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh;
+            background-image: radial-gradient(#e0f7fa 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+        .container {
+            background: white; width: 95%; max-width: 900px; min-height: 650px;
+            padding: 30px; border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative; overflow: hidden;
+            border: 5px solid #5d4037;
+        }
+        h1, h2, h3 { color: #3e2723; text-align: center; }
+        .btn {
+            display: block; width: 200px; padding: 15px; margin: 20px auto;
+            background-color: #ffca28; color: #3e2723;
+            border: none; border-radius: 50px;
+            font-size: 1.2rem; font-weight: bold; cursor: pointer;
+            text-align: center; transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn:hover { transform: scale(1.05); background-color: #ffb300; }
+        .page { display: none; animation: fadeIn 0.4s; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .login-form { text-align: center; margin-top: 50px; }
+        .login-input-group { margin: 15px 0; }
+        .login-input-group label { font-size: 1.2rem; font-weight: bold; color: #5d4037; display: inline-block; width: 60px; }
+        input[type="text"] { 
+            padding: 12px; font-size: 1.1rem; border-radius: 10px; 
+            border: 2px solid #ccc; width: 180px; outline: none;
+        }
+
+        .map-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 30px; }
+        .level-card { border: 3px solid #ccc; border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .level-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .level-easy { background-color: #e8f5e9; border-color: #4caf50; }
+        .level-mid { background-color: #fff3e0; border-color: #ff9800; }
+        .level-hard { background-color: #ffebee; border-color: #f44336; }
+        .level-completed { opacity: 0.6; position: relative; }
+        .level-completed::after { content: "已完成"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 5px; }
+        
+        .quiz-container { text-align: center; }
+        .question-box { font-size: 1.3rem; margin-bottom: 20px; background: #e3f2fd; padding: 20px; border-radius: 10px; color: #0d47a1; text-align: left; }
+        .image-container { margin: 15px auto; max-width: 400px; height: 180px; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 10px; overflow: hidden; }
+        .image-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .single-column .option-btn { grid-column: span 2; }
+        
+        .option-btn { 
+            background: white; border: 2px solid #2196f3; padding: 15px; 
+            border-radius: 10px; font-size: 1.05rem; cursor: pointer; 
+            transition: 0.2s; text-align: left; padding-left: 20px; line-height: 1.4;
+        }
+        .option-btn:hover { background: #e3f2fd; border-color: #0d47a1; }
+        
+        .reading-text { text-align: left; background: #fdfdfd; padding: 20px; border-radius: 10px; font-size: 1.05rem; margin-bottom: 15px; border: 1px solid #ddd; border-left: 8px solid #f44336; line-height: 1.8; max-height: 300px; overflow-y: auto; color: #333; }
+        
+        .feedback-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; flex-direction: column; justify-content: center; align-items: center; color: white; z-index: 100; }
+        .feedback-content { background: white; color: black; padding: 30px; border-radius: 15px; text-align: center; max-width: 80%; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="page-home" class="page active">
+        <h1>🕵️ 動物大解密：自然偵探社</h1>
+        <div style="text-align:center;">
+            <img src="images/unnamed.jpg" alt="封面預留">
+        </div>
+        <div style="background-color: #fff8e1; padding: 20px; border-radius: 10px; margin: 20px 0;">
+            <h3>📜 任務說明：</h3>
+            <p>1. 🖱️ 使用<b>滑鼠左鍵</b>點選選項。<br>
+               2. 🗺️ 自由選擇挑戰順序。<br>
+               3. 📊 首席偵探挑戰需細心閱讀偵探筆記後再作答。</p>
+        </div>
+        <button class="btn" onclick="goToPage('page-login')">開始調查</button>
+    </div>
+
+    <div id="page-login" class="page">
+        <h2>📝 偵探身分登錄</h2>
+        <div class="login-form">
+            <div class="login-input-group">
+                <label>班級：</label>
+                <input type="text" id="class-input" placeholder="例如：601">
+            </div>
+            <div class="login-input-group">
+                <label>座號：</label>
+                <input type="text" id="seat-input" placeholder="例如：01">
+            </div>
+            <button class="btn" onclick="login()">確認身分</button>
+        </div>
+    </div>
+
+    <div id="page-hub" class="page">
+        <div style="background: #3e2723; color: white; padding: 10px 20px; border-radius: 10px; display:flex; justify-content:space-between;">
+            <span id="user-display">偵探：未登入</span>
+            <span>總分：<span id="total-score">0</span></span>
+        </div>
+        <h2>🗺️ 選擇調查區域</h2>
+        <div class="map-grid">
+            <div class="level-card level-easy" id="lvl-btn-easy" onclick="startLevel('easy')">
+                <h3>🟢 新手訓練場</h3><p>是非題 (5題)</p>
+            </div>
+            <div class="level-card level-mid" id="lvl-btn-mid" onclick="startLevel('mid')">
+                <h3>🟡 構造研究所</h3><p>選擇題 (5題)</p>
+            </div>
+            <div class="level-card level-hard" id="lvl-btn-hard" onclick="startLevel('hard')">
+                <h3>🔴 首席偵探挑戰</h3><p>閱讀素養 (3題)</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-quiz" class="page">
+        <div class="quiz-container">
+            <h3 id="level-title">關卡名稱</h3>
+            <div id="reading-area" class="reading-text" style="display:none;"></div>
+            <div class="image-container" id="img-box">
+                <img id="question-image" src="" alt="">
+            </div>
+            <div class="question-box" id="question-text">題目載入中...</div>
+            <div id="options-area" class="options-grid"></div>
+        </div>
+    </div>
+
+    <div id="feedback" class="feedback-overlay">
+        <div class="feedback-content">
+            <div id="fb-title" style="font-size: 2rem; font-weight: bold; margin-bottom: 10px;"></div>
+            <div id="fb-text" style="margin-bottom:20px; color:#555; text-align: left; line-height: 1.5;"></div>
+            <button class="btn" onclick="nextQuestion()">繼續</button>
+        </div>
+    </div>
+
+    <div id="page-result" class="page">
+        <div style="text-align: center; margin-top: 50px;">
+            <h2>📊 調查報告</h2>
+            <p style="font-size: 1.5rem;">本關得分：<span id="level-score" style="color:red; font-weight:bold;">0</span> / 100</p>
+            <p id="level-comment"></p>
+            <button class="btn" onclick="goToPage('page-hub')">返回地圖</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function goToPage(pageId) {
+        const pages = document.querySelectorAll('.page');
+        pages.forEach(p => p.classList.remove('active'));
+        const target = document.getElementById(pageId);
+        if (target) target.classList.add('active');
+    }
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    const cnNums = ["一、", "二、", "三、", "四、", "五、"];
+
+    const masterDb = {
+        easy: [
+            { q: "人體的運動，主要是靠「骨骼」自己收縮，來帶動肌肉和關節活動的嗎？", ansText: "X", options: ["O", "X"], img: "", note: "人體動作是靠肌肉收縮與舒張，產生拉力帶動骨骼與關節。" },
+            { q: "蚯蚓沒有骨骼和關節，牠是利用身體肌肉的收縮和舒張來爬行。", ansText: "O", options: ["O", "X"], img: "images/earthworm.jpg", note: "正確！蚯蚓依靠身體肌肉產生的波浪狀蠕動前進。" },
+            { q: "我們呼出的氣體會讓澄清石灰水變混濁，代表呼出的氣體含有較多的氧氣。", ansText: "X", options: ["O", "X"], img: "", note: "二氧化碳會使澄清石灰水變混濁，這是檢驗二氧化碳的方法。" },
+            { q: "金魚生活在水中，牠們是用「肺」來呼吸，進行氣體交換。", ansText: "X", options: ["O", "X"], img: "images/goldfish.jpg", note: "金魚利用鰓蓋張合讓水流過鰓部，吸取水中的氧。" },
+            { q: "發明蛙鞋的靈感，是來自於青蛙腳上的蹼，這是一種「仿生」的應用。", ansText: "O", options: ["O", "X"], img: "", note: "正確！模仿生物構造發明工具就是仿生科技。" }
+        ],
+        mid: [
+            { q: "手臂由伸直變為彎曲時，肌肉的運作情況為何？", ansText: "手臂內側肌肉收縮變短，外側肌肉舒張變長", options: ["手臂內側肌肉收縮變短，外側肌肉舒張變長", "手臂內側肌肉舒張變長，外側肌肉收縮變短", "兩側肌肉同時收縮變硬，拉動關節"], img: "images/arm.jpg", note: "肌肉必須成對運作，一收縮一舒張才能拉動骨骼。" },
+            { q: "偵探小妍利用「有無四肢」來分類動物，哪一種動物會被分到「無四肢」的一組？", ansText: "金魚與蚯蚓", options: ["蜥蜴與蛇", "金魚與蚯蚓", "鳥與蝙蝠"], img: "", note: "金魚利用鰭，蚯蚓利用肌肉收縮。蜥蜴有四肢。" },
+            { q: "關於動物呼吸器官的配對，下列哪一組選項完全「正確」？", ansText: "昆蟲-氣管、狗-肺、魚-鰓", options: ["昆蟲-肺、狗-氣孔、魚-鰓", "昆蟲-氣管、狗-肺、魚-鰓", "昆蟲-氣門、狗-鰓、魚-氣管"], img: "", note: "昆蟲透過腹部氣門進入氣管呼吸。" },
+            { q: "在觀察動物運動時，哪一種動物「不需要」依靠骨骼或關節的配合？", ansText: "蝸牛利用柔軟的腹足爬行", options: ["蜥蜴在地面快速爬行", "蝸牛利用柔軟的腹足爬行", "斑鳩張開翅膀飛行"], img: "", note: "軟體動物如蝸牛沒有內部骨骼架構。" },
+            { q: "關於仿生科技的靈感來源，哪一個發明與生物構造的對應是「錯誤」的？", ansText: "船槳是模仿大象長鼻的靈活性", options: ["飛機是模仿鳥類的翅膀構造", "章魚吸盤與工業吸盤的功能相似", "船槳是模仿大象長鼻的靈活性"], img: "", note: "船槳主要是模仿魚類的鰭或水生動物有蹼的腳。" }
+        ],
+        hard: [
+            { 
+                type: "read", 
+                q: "根據偵探筆記，下列關於蝸牛運動機制與特性的敘述，哪一項最符合文意？", 
+                ansText: "蝸牛僅能利用腹足肌肉單向的波浪狀規律收縮來緩慢推進，無法產生倒退的動作。", 
+                options: [
+                    "蝸牛因為沒有骨骼支撐，故必須利用硬殼與肌肉共同擺動才能加快前進速度。",
+                    "蝸牛分泌的黏液除了標示領地外，最主要的用途是幫助牠在危險時快速退後躲避。",
+                    "蝸牛僅能利用腹足肌肉單向的波浪狀規律收縮來緩慢推進，無法產生倒退的動作。",
+                    "蝸牛運動方式與蚯蚓完全相同，都是利用全身肌肉縮短再拉長的方式來移動。"
+                ], 
+                article: "<b>【偵探筆記：牆角的慢行者】</b><br>在雨後的校園中，我們常能觀察到背著硬殼緩慢爬行的蝸牛。從生物構造學來看，蝸牛屬於軟體動物，體內完全沒有骨骼支撐。牠移動的祕密在於身體下方的「腹足」，這是一塊厚實的肌肉組織。當蝸牛想移動時，腹足的肌肉會由後往前產生波浪般的規律收縮與舒張，進而帶動身體前進。特別的是，由於這種肌肉收縮的方向性，蝸牛在構造上「只能前進，無法後退」。此外，牠會分泌黏液潤滑地面，這不僅能保護柔軟的腹足不被刮傷，還能增加爬行時的附著力。", 
+                note: "文中重點在於腹足肌肉的波浪狀收縮與只能前進的特性。" 
+            },
+            { 
+                type: "read", 
+                q: "關於水生生物的氣體交換方式，下列敘述何者與偵探筆記的內容「最吻合」？", 
+                ansText: "鯨豚雖然生活在海中，但其生理構造屬於哺乳類，必須藉由噴氣孔與大氣進行交換。", 
+                options: [
+                    "不論是魚類或鯨豚，只要是長期生活在水中的脊椎動物，都是利用鰓來過濾氧氣。",
+                    "鯨豚雖然生活在海中，但其生理構造屬於哺乳類，必須藉由噴氣孔與大氣進行交換。",
+                    "魚類的鰓蓋不停張合是為了將含氧的空氣吸入肺部，再排出多餘的水分。",
+                    "鯨豚在水下待太久會溺水，是因為牠們的噴氣孔無法在水中關閉而導致進水。"
+                ], 
+                article: "<b>【偵探筆記：水中的呼吸奧祕】</b><br>雖然動物都生活在水中，但氣體交換的方式卻大不相同。魚類具備高效的「鰓」，當水流過鰓部密布的微血管時，會吸取溶解在水中的氧氣並排出二氧化碳。然而，同樣在海中悠游的鯨魚與海豚，雖然外形像魚，但生理構造上屬於哺乳類，具備與人類相似的「肺」。這意味著牠們無法利用水中的溶解氧，必須定期浮出水面，利用頭頂的「噴氣孔」強力排出體內的二氧化碳，並迅速吸入新鮮的大氣。這種適應水生生活的換氣機制，是生物演化上的奇妙表現。", 
+                note: "重點在於區分魚類（鰓呼吸）與哺乳類鯨豚（肺呼吸）的差異。" 
+            },
+            { 
+                type: "read", 
+                q: "根據這則筆記，我們該如何最正確地定義「仿生科技 (Biomimicry)」？", 
+                ansText: "這是一門跨學科技術，旨在深入觀察生物的特殊物理構造或行為模式，並將其原理應用於人類工具的研發中。", 
+                options: [
+                    "這是一門專門研究如何製作與真實動物外貌一模一樣的模型，以供博物館教育展示的科學。",
+                    "仿生科技僅限於模仿鳥類的翅膀來發明飛行器，或是模仿魚類的尾鰭來改善船舶航行速度。",
+                    "這是一門跨學科技術，旨在深入觀察生物的特殊物理構造或行為模式，並將其原理應用於人類工具的研發中。",
+                    "只要是與大自然環境有關的發明，例如利用太陽光發電或風力發電，都可以被稱為仿生科技。"
+                ], 
+                article: "<b>【偵探筆記：向自然界取經】</b><br>人類在科技研發的過程中，常會回頭觀察大自然這個「最佳設計師」。所謂「仿生 (Biomimicry)」，其核心定義並非只是單純在外形上模仿生物，而是更深層地探討生物特殊的身體構造原理或其獨特的運動模式。例如：發明家觀察青蛙腳趾間的「蹼」，理解其能增加推水面積的原理，進而發明了助泳的「蛙鞋」；科學家觀察章魚觸手上「吸盤」形成的壓力差，研發出能吸附重物的工業用吸盤。這種「從自然生物中獲得靈感並轉化為實用科技」的過程，就是仿生科技的價值所在。", 
+                note: "仿生科技的核心在於模仿「構造原理」與「行為方式」。" 
+            }
+        ]
+    };
+
+    let currentUser = { class: "", seat: "" }, currentLevel = "", questionIndex = 0, score = 0, totalScore = 0, completedLevels = [], currentQuizSet = [];
+
+    function login() {
+        const clsValue = document.getElementById('class-input').value;
+        const seatValue = document.getElementById('seat-input').value;
+        if (!clsValue || !seatValue) { alert("請填寫班級和座號！"); return; }
+        currentUser.class = clsValue; currentUser.seat = seatValue;
+        document.getElementById('user-display').innerText = `偵探：${clsValue} 班 ${seatValue} 號`;
+        goToPage('page-hub');
+    }
+
+    function startLevel(lvl) {
+        currentLevel = lvl; questionIndex = 0; score = 0;
+        currentQuizSet = shuffleArray([...masterDb[lvl]]);
+        document.getElementById('level-title').innerText = lvl==='easy'?"🟢 新手訓練場":lvl==='mid'?"🟡 構造研究所":"🔴 首席偵探挑戰";
+        goToPage('page-quiz'); 
+        renderQuestion();
+    }
+
+    function renderQuestion() {
+        const qData = currentQuizSet[questionIndex];
+        const qText = document.getElementById('question-text');
+        const qImg = document.getElementById('question-image');
+        const optArea = document.getElementById('options-area');
+        const readArea = document.getElementById('reading-area');
+        const imgBox = document.getElementById('img-box');
+
+        optArea.innerHTML = ""; 
+        readArea.style.display = "none"; 
+        
+        if (currentLevel === 'mid' || currentLevel === 'hard') {
+            optArea.classList.add('single-column');
+        } else {
+            optArea.classList.remove('single-column');
+        }
+        
+        qText.innerText = (cnNums[questionIndex] || (questionIndex + 1) + "、") + qData.q;
+
+        if (qData.type === 'read') {
+            readArea.style.display = "block"; 
+            readArea.innerHTML = qData.article;
+            imgBox.style.display = "none";
+        } else {
+            imgBox.style.display = "flex"; 
+            if(qData.img) {
+                qImg.src = qData.img;
+            } else {
+                qImg.src = "https://placehold.co/400x200/f0f0f0/f0f0f0?text=圖片載入中";
+            }
+        }
+
+        let displayOptions;
+        if (currentLevel === 'easy') {
+            displayOptions = ["O", "X"];
+        } else {
+            displayOptions = shuffleArray([...qData.options]);
+        }
+
+        displayOptions.forEach((optText, index) => {
+            const btn = document.createElement('div'); 
+            btn.className = 'option-btn';
+            const displayLabel = (currentLevel === 'mid' || currentLevel === 'hard') ? (index + 1) + ". " : "";
+            btn.innerText = displayLabel + optText; 
+            btn.onclick = () => checkAnswer(optText, qData.ansText, qData.note);
+            optArea.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selectedText, correctText, note) {
+        // 優化判斷邏輯：移除選項編號與空白後再比對
+        const cleanSelected = selectedText.replace(/^\d+\.\s*/, "").trim();
+        const cleanCorrect = correctText.trim();
+        
+        const isCorrect = cleanSelected === cleanCorrect;
+        const fbTitle = document.getElementById('fb-title');
+        const fbText = document.getElementById('fb-text');
+
+        if (isCorrect) {
+            score += (currentLevel === 'hard' ? 34 : 20);
+            fbTitle.innerText = "⭕ 任務達成！"; 
+            fbTitle.style.color = "#4caf50";
+            fbText.innerHTML = `<b>【分析報告】</b><br>${note}`;
+        } else {
+            fbTitle.innerText = "❌ 偵測失誤！"; 
+            fbTitle.style.color = "#f44336";
+            fbText.innerHTML = `正確答案是：<br><b>${correctText}</b><br><br><b>【知識補帖】</b><br>${note}`;
+        }
+        document.getElementById('feedback').style.display = "flex";
+    }
+
+    function nextQuestion() {
+        document.getElementById('feedback').style.display = 'none';
+        questionIndex++;
+        if (questionIndex < currentQuizSet.length) renderQuestion();
+        else endLevel();
+    }
+
+    function endLevel() {
+        if (score > 100) score = 100;
+        if (!completedLevels.includes(currentLevel)) {
+            totalScore += score; 
+            completedLevels.push(currentLevel);
+            document.getElementById(`lvl-btn-${currentLevel}`).classList.add('level-completed');
+        }
+        document.getElementById('total-score').innerText = totalScore;
+        document.getElementById('level-score').innerText = score;
+        document.getElementById('level-comment').innerText = score >= 80 ? "🌟 傑出的調查，你對動物構造瞭若指掌！" : "💪 再細心一點，自然界的祕密等你去發現！";
+        goToPage('page-result');
+    }
+</script>
+
+</body>
+</html>
